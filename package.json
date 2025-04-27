@@ -1,0 +1,21 @@
+{
+  "name": "bot-whatsapp-ufmg",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node bot/index.js",
+    "reset": "node scripts/reset.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "João Gustavo França",
+  "email": "joaogfc6@gmail.com",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.16",
+    "node-cron": "^3.0.3",
+    "puppeteer": "^24.7.2",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
