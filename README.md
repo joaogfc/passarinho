@@ -73,7 +73,7 @@ Se não os tiver, você pode instalá-los [aqui](https://nodejs.org/).
 
 1. Clone este repositório:
    ```bash
-   git clone https://github.com/seu-usuario/bot-whatsapp-ufmg.git
+   git clone https://github.com/joaogfc/passarinho.git
    ```
 
 2. Navegue até o diretório do projeto:
