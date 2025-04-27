@@ -116,7 +116,7 @@ Se você deseja contribuir para o projeto, siga os seguintes passos:
 
 ## 📜 Licença
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a licença GPLv3 - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 🙏 Agradecimentos
 Agradecemos à API Baileys pelo excelente suporte e recursos, que possibilitaram a criação desta integração de WhatsApp com o nosso bot de maneira eficiente e robusta. 👏
