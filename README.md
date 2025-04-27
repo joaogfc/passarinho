@@ -118,3 +118,11 @@ Se você deseja contribuir para o projeto, siga os seguintes passos:
 
 Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
+🙏 Agradecimentos
+Agradecemos à API Baileys pelo excelente suporte e recursos, que possibilitaram a criação desta integração de WhatsApp com o nosso bot de maneira eficiente e robusta. 👏
+
+Agradecimentos especiais aos colaboradores desse projeto:
+
+Confira o perfil de [@joaov-tst](https://github.com/joaov-tst)
+
+
