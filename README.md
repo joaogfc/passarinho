@@ -25,7 +25,6 @@ A estrutura do projeto é organizada da seguinte maneira:
 ```
 bot-whatsapp-ufmg/
 │
-├── discloud.config          # Configuração principal do bot
 ├── fontes_cursos.json       # Dados sobre cursos dos alunos
 ├── fontes_interesses.json   # Dados sobre interesses dos alunos
 ├── package.json             # Dependências e scripts do projeto
@@ -43,8 +42,6 @@ bot-whatsapp-ufmg/
 - **fontes_cursos.json** e **fontes_interesses.json**: Arquivos JSON que armazenam informações sobre os cursos e interesses dos usuários, podendo ser facilmente atualizados.
 
 - **package.json** e **package-lock.json**: Arquivos de configuração para gerenciamento de dependências e scripts do Node.js.
-
-- **backup/**: Contém backups de dados e configurações do bot.
 
 - **bot/**: Implementação do bot, incluindo lógica de interação, configuração e integração com o WhatsApp.
 
