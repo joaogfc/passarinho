@@ -90,7 +90,7 @@ async function atualizarCadastro(sock, jid, texto, cadastro, estados) {
       await sock.sendMessage(jid, { text: "📚 Informe o novo curso:\n1 - Ciência da Computação\n2 - Sistemas de Informação" });
     } else if (texto === "3") {
       estados.atualizacao[jid] = { etapa: 2, tipo: 'interesses' };
-      await sock.sendMessage(jid, { text: "✨ Escolha novos interesses:\n1 - Eventos\n2 - Pesquisa" });
+      await sock.sendMessage(jid, { text: "✨ Escolha novos interesses:\n1 - Eventos\n2 - Pesquisa\n\nVocê pode escolher mais de um, separados por vírgula (ex: 1,2)" });
     } else {
       await sock.sendMessage(jid, { text: "❌ Escolha 1, 2 ou 3." });
     }
