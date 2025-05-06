@@ -4,6 +4,11 @@ const { enviarSaudacao, enviarInteresses, enviarAjuda, enviarMensagemPadrao } = 
 async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados) {
   const msg = texto.toLowerCase().trim();
 
+  // simula que o bot está digitando
+    await sock.sendPresenceUpdate('composing', jid);
+    await new Promise(resolve => setTimeout(resolve, 2000)); // espera 2 segundos fingindo digitar
+    await sock.sendPresenceUpdate('paused', jid);
+
   // Se o usuário estiver em processo de atualização de cadastro
   if (estados.atualizacao[jid]) {
     await atualizarCadastro(sock, jid, texto, cadastro, estados);
