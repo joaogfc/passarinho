@@ -2,5 +2,12 @@
 node_modules/
 ./node_modules/
 
+# Ignorar a pasta auth em qualquer lugar do projeto
+auth_info/
+./auth_info/
+
+backup/
+# Ignorar arquivos de backup
+
 ### VS Code ###
 .vscode/
