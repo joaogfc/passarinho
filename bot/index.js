@@ -3,7 +3,7 @@ const { tratarMensagemUsuario } = require('../controllers/usuarioController');
 const { tratarMensagemGrupo } = require('../controllers/grupoController');
 const { carregarArquivo } = require('../utils/arquivos');
 const { iniciarFluxoCadastro } = require('../services/cadastroService');
-const { identificarCurso } = require('./validarCurso');
+const validarCurso = require('../services/validarCurso');
 
 // Carregar os dados
 let cadastro = carregarArquivo('./cadastro.json');

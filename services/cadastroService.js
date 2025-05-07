@@ -1,5 +1,5 @@
 const { salvarCadastro } = require('../utils/arquivos');
-const { identificarCurso } = require('../bot/validarCurso'); // nova importação
+const { identificarCurso } = require('../services/validarCurso'); // nova importação
 
 // Fluxo de cadastro automático
 async function iniciarFluxoCadastro(sock, jid, texto, cadastro, estados) {
