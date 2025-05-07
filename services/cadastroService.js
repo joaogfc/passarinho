@@ -1,4 +1,5 @@
 const { salvarCadastro } = require('../utils/arquivos');
+const { identificarCurso } = require('../bot/validarCurso'); // nova importação
 
 // Fluxo de cadastro automático
 async function iniciarFluxoCadastro(sock, jid, texto, cadastro, estados) {
@@ -15,20 +16,49 @@ async function iniciarFluxoCadastro(sock, jid, texto, cadastro, estados) {
   if (etapa === 1) {
     cadastro[jid] = { nome: texto };
     estados.cadastro[jid].etapa = 2;
-    await sock.sendMessage(jid, { text: "📚 Qual seu curso?\n1 - Ciência da Computação\n2 - Sistemas de Informação" });
+    await sock.sendMessage(jid, { text: "📚 Qual seu curso? (Digite livremente o nome do curso)" });
+    return;
+  }
+
+  if (etapa === 2.5) {
+    const resposta = texto.trim().toLowerCase();
+    const sugestao = estados.cadastro[jid].confirmarCurso;
+
+    if (resposta === 'sim' && sugestao) {
+      cadastro[jid].curso = sugestao;
+      estados.cadastro[jid].etapa = 3;
+      delete estados.cadastro[jid].confirmarCurso;
+      await sock.sendMessage(jid, {
+        text: `✅ Curso confirmado: *${sugestao}*\nAgora me diga seus interesses:\n1 - Eventos\n2 - Pesquisa\n(Envie os números separados por vírgula, ex: 1,2)`
+      });
+    } else {
+      estados.cadastro[jid].etapa = 2;
+      delete estados.cadastro[jid].confirmarCurso;
+      await sock.sendMessage(jid, {
+        text: '🔁 Ok, tente escrever o nome do curso novamente.'
+      });
+    }
     return;
   }
 
   if (etapa === 2) {
-    const cursos = { "1": "Ciência da Computação", "2": "Sistemas de Informação" };
-    const cursoEscolhido = cursos[texto.trim()];
+    const cursoIdentificado = identificarCurso(texto.trim(), true); // modo detalhado
 
-    if (!cursoEscolhido) {
-      await sock.sendMessage(jid, { text: "❌ Curso inválido. Responda 1 ou 2." });
+    if (!cursoIdentificado) {
+      await sock.sendMessage(jid, { text: "❌ Não consegui identificar o curso. Tente escrever o nome completo ou de outra forma." });
       return;
     }
 
-    cadastro[jid].curso = cursoEscolhido;
+    if (cursoIdentificado.rating < 0.9) {
+      estados.cadastro[jid].etapa = 2.5;
+      estados.cadastro[jid].confirmarCurso = cursoIdentificado.nome;
+      await sock.sendMessage(jid, {
+        text: `🤔 Você quis dizer *${cursoIdentificado.nome}*? (responda sim ou não)`
+      });
+      return;
+    }
+
+    cadastro[jid].curso = cursoIdentificado.nome;
     estados.cadastro[jid].etapa = 3;
     await sock.sendMessage(jid, { text: "✨ Agora me diga seus interesses:\n1 - Eventos\n2 - Pesquisa\n(Envie os números separados por vírgula, ex: 1,2)" });
     return;
@@ -87,7 +117,7 @@ async function atualizarCadastro(sock, jid, texto, cadastro, estados) {
       await sock.sendMessage(jid, { text: "✏️ Informe o novo nome completo:" });
     } else if (texto === "2") {
       estados.atualizacao[jid] = { etapa: 2, tipo: 'curso' };
-      await sock.sendMessage(jid, { text: "📚 Informe o novo curso:\n1 - Ciência da Computação\n2 - Sistemas de Informação" });
+      await sock.sendMessage(jid, { text: "📚 Informe o novo curso (digite o nome completo):" });
     } else if (texto === "3") {
       estados.atualizacao[jid] = { etapa: 2, tipo: 'interesses' };
       await sock.sendMessage(jid, { text: "✨ Escolha novos interesses:\n1 - Eventos\n2 - Pesquisa\n\n*Você pode escolher mais de um, separados por vírgula (ex: 1,2)*" });
@@ -105,16 +135,15 @@ async function atualizarCadastro(sock, jid, texto, cadastro, estados) {
       delete estados.atualizacao[jid];
       await sock.sendMessage(jid, { text: `✅ Nome atualizado para: ${cadastro[jid].nome}` });
     } else if (tipo === 'curso') {
-      const cursos = { "1": "Ciência da Computação", "2": "Sistemas de Informação" };
-      const curso = cursos[texto.trim()];
-      if (!curso) {
-        await sock.sendMessage(jid, { text: "❌ Curso inválido. Escolha 1 ou 2." });
+      const cursoIdentificado = identificarCurso(texto.trim(), true);
+      if (!cursoIdentificado) {
+        await sock.sendMessage(jid, { text: "❌ Não consegui identificar o curso. Tente novamente com o nome completo." });
         return;
       }
-      cadastro[jid].curso = curso;
+      cadastro[jid].curso = cursoIdentificado.nome;
       salvarCadastro(cadastro, './cadastro.json');
       delete estados.atualizacao[jid];
-      await sock.sendMessage(jid, { text: `✅ Curso atualizado para: ${curso}` });
+      await sock.sendMessage(jid, { text: `✅ Curso atualizado para: ${cursoIdentificado.nome}` });
     } else if (tipo === 'interesses') {
       const opcoes = { "1": "Eventos", "2": "Pesquisa" };
       const novos = texto.split(',').map(v => v.trim()).map(v => opcoes[v]).filter(Boolean);
