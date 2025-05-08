@@ -1,106 +1,127 @@
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
-async function redirecionarMensagemParaUsuarios(sock, grupoId, msg, texto, cadastro, fontesCursos, fontesInteresses) {
-  const cursoRelacionado = fontesCursos[grupoId];
-  const interesseRelacionado = fontesInteresses[grupoId];
+async function redirecionarMensagemParaUsuarios(
+  sock,
+  grupoId,
+  msg,
+  texto,
+  cadastro,
+  fontesCursos,
+  fontesInteresses
+) {
+  let cursosRelacionados = fontesCursos[grupoId] || [];
+  if (!Array.isArray(cursosRelacionados)) cursosRelacionados = [cursosRelacionados];
 
-  if (!cursoRelacionado && !interesseRelacionado) return;
+  let interessesRelacionados = fontesInteresses[grupoId] || [];
+  if (!Array.isArray(interessesRelacionados)) interessesRelacionados = [interessesRelacionados];
 
-  // Obter dados do grupo
-  let nomeGrupo = "Grupo desconhecido";
-  let linkGrupo = "Sem link disponível";
-
-  try {
-    const metadata = await sock.groupMetadata(grupoId);
-    if (metadata) {
-      nomeGrupo = metadata.subject || nomeGrupo;
-
-      try {
-        const code = await sock.groupInviteCode(grupoId);
-        linkGrupo = `https://chat.whatsapp.com/${code}`;
-      } catch (e) {
-        console.log("Não foi possível obter o link do grupo:", e.message);
-      }
-    }
-  } catch (err) {
-    console.log("Erro ao buscar informações do grupo:", err.message);
-  }
-
-  const remetenteNome = msg.pushName || "Usuário desconhecido";
-  const rodapeFinal = `Fonte: ${nomeGrupo}\nLink do Grupo: ${linkGrupo}\nUsuário: ${remetenteNome}`;
+  if (cursosRelacionados.length === 0 && interessesRelacionados.length === 0) return;
 
   for (const [userJid, dados] of Object.entries(cadastro)) {
-    const deveReceber =
-      (cursoRelacionado && dados.curso === cursoRelacionado) ||
-      (interesseRelacionado && dados.interesses?.includes(interesseRelacionado));
+    // adiciona delay entre envios para evitar bloqueio por spam
+    const delayMs = 500; // ajuste em milissegundos conforme necessário
+    await new Promise(res => setTimeout(res, delayMs));
+    const { curso, interesses } = dados;
+    const temCurso = cursosRelacionados.includes(curso);
+    const temInteresse = Array.isArray(interesses) && interesses.some(i => interessesRelacionados.includes(i));
 
-    if (deveReceber) {
-      const tipoMensagem = Object.keys(msg.message || {})[0];
+    if (!temCurso && !temInteresse) continue;
 
-      if (tipoMensagem === "imageMessage") {
-        const buffer = await downloadMediaMessage(msg, 'buffer', {});
-        const legendaOriginal = msg.message.imageMessage.caption || "";
-        const legendaFinal = `${legendaOriginal}\n\n${rodapeFinal}`;
+    const categoriaValor = temCurso ? curso : interesses.find(i => interessesRelacionados.includes(i));
+    const rodape = `*Categoria: ${categoriaValor}*`;
 
-        await sock.sendMessage(userJid, {
-          image: buffer,
-          caption: legendaFinal.trim()
-        });
+    const tipoMensagem = Object.keys(msg.message || {})[0];
 
-      } else if (tipoMensagem === "videoMessage") {
-        const buffer = await downloadMediaMessage(msg, 'buffer', {});
-        const legendaOriginal = msg.message.videoMessage.caption || "";
-        const legendaFinal = `${legendaOriginal}\n\n${rodapeFinal}`;
+    try {
+      if (!tipoMensagem) continue;
 
-        await sock.sendMessage(userJid, {
-          video: buffer,
-          caption: legendaFinal.trim()
-        });
+      if ([
+        'pollCreationMessage',
+        'liveLocationMessage',
+        'protocolMessage'
+      ].includes(tipoMensagem)) {
+        continue;
+      }
 
-      } else if (tipoMensagem === "audioMessage") {
-        const buffer = await downloadMediaMessage(msg, 'buffer', {});
-
-        await sock.sendMessage(userJid, {
-          audio: buffer,
-          mimetype: 'audio/ogg; codecs=opus', // WhatsApp espera esse formato
-          ptt: true // envia como "áudio de voz"
-        });
-
-      } else if (tipoMensagem === "stickerMessage") {
-        const buffer = await downloadMediaMessage(msg, 'buffer', {});
-
-        await sock.sendMessage(userJid, {
-          sticker: buffer
-        });
-
-      } else if (tipoMensagem === "locationMessage") {
-        const localizacao = msg.message.locationMessage;
-
-        if (localizacao.degreesLatitude && localizacao.degreesLongitude && !localizacao.liveLocation) {
+      switch (tipoMensagem) {
+        case 'imageMessage': {
+          const buffer = await downloadMediaMessage(msg, 'buffer', {});
+          const caption = msg.message.imageMessage.caption || '';
           await sock.sendMessage(userJid, {
-            location: {
-              degreesLatitude: localizacao.degreesLatitude,
-              degreesLongitude: localizacao.degreesLongitude,
-              name: localizacao.name || "Localização",
-              address: localizacao.address || ""
+            image: buffer,
+            caption: `${caption}\n\n${rodape}`.trim()
+          });
+          break;
+        }
+        case 'videoMessage': {
+          const buffer = await downloadMediaMessage(msg, 'buffer', {});
+          const caption = msg.message.videoMessage.caption || '';
+          await sock.sendMessage(userJid, {
+            video: buffer,
+            caption: `${caption}\n\n${rodape}`.trim()
+          });
+          break;
+        }
+        case 'audioMessage': {
+          const buffer = await downloadMediaMessage(msg, 'buffer', {});
+          await sock.sendMessage(userJid, {
+            audio: buffer,
+            mimetype: 'audio/ogg; codecs=opus',
+            ptt: true
+          });
+          break;
+        }
+        case 'stickerMessage': {
+          const buffer = await downloadMediaMessage(msg, 'buffer', {});
+          await sock.sendMessage(userJid, {
+            sticker: buffer
+          });
+          break;
+        }
+        case 'locationMessage': {
+          const loc = msg.message.locationMessage;
+          if (loc.degreesLatitude && loc.degreesLongitude && !loc.liveLocation) {
+            await sock.sendMessage(userJid, {
+              location: {
+                degreesLatitude: loc.degreesLatitude,
+                degreesLongitude: loc.degreesLongitude
+              }
+            });
+          }
+          break;
+        }
+        case 'contactMessage': {
+          const contact = msg.message.contactMessage;
+          await sock.sendMessage(userJid, {
+            contacts: {
+              displayName: contact.displayName,
+              contacts: [contact]
             }
           });
-        } else {
-          console.log("Ignorando localização em tempo real.");
+          break;
         }
-
-      } else {
-        // Se for texto ou tipo desconhecido
-        const textoFinal = `${texto}\n\n${rodapeFinal}`;
-
-        await sock.sendMessage(userJid, {
-          text: textoFinal.trim()
-        });
+        case 'contactsArrayMessage': {
+          const list = msg.message.contactsArrayMessage.contacts;
+          await sock.sendMessage(userJid, {
+            contacts: {
+              displayName: '',
+              contacts: list
+            }
+          });
+          break;
+        }
+        default: {
+          await sock.sendMessage(userJid, {
+            text: `${texto}\n\n${rodape}`.trim()
+          });
+        }
       }
+
+      console.log(`Mensagem para ${userJid} (curso: ${curso}).`);
+    } catch (err) {
+      console.log(`Erro ao enviar para ${userJid}:`, err.message);
     }
   }
 }
 
-const grupoService = { redirecionarMensagemParaUsuarios };
-
-module.exports = { grupoService };
+module.exports = { redirecionarMensagemParaUsuarios };
