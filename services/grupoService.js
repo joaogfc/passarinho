@@ -18,9 +18,6 @@ async function redirecionarMensagemParaUsuarios(
   if (cursosRelacionados.length === 0 && interessesRelacionados.length === 0) return;
 
   for (const [userJid, dados] of Object.entries(cadastro)) {
-    // adiciona delay entre envios para evitar bloqueio por spam
-    const delayMs = 500; // ajuste em milissegundos conforme necessário
-    await new Promise(res => setTimeout(res, delayMs));
     const { curso, interesses } = dados;
     const temCurso = cursosRelacionados.includes(curso);
     const temInteresse = Array.isArray(interesses) && interesses.some(i => interessesRelacionados.includes(i));

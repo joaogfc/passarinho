@@ -17,6 +17,7 @@ Com uma configuração simples e integração com várias APIs, este bot é idea
 - **Envio de QR Codes**: Geração e envio de QR codes para facilitar a interação com o bot. 📲
 - **Automação de Tarefas**: O bot pode ser configurado para executar tarefas automatizadas, como lembretes e alertas. ⚙️
 - **Gestão de Cursos e Interesses**: As informações sobre os cursos e interesses dos usuários podem ser facilmente manipuladas e consultadas. 🔍
+- **Consulta ao Cardápio do RU**: Permite ao usuário consultar o cardápio atualizado do Restaurante Universitário (RU) da UFMG diretamente pelo WhatsApp. 🍽️
 
 ## 📂 Estrutura do Projeto
 
@@ -34,7 +35,9 @@ bot-whatsapp-ufmg/
 ├── controllers/             # Controladores de lógica de negócios
 ├── scripts/                 # Scripts auxiliares
 ├── services/                # Serviços integrados ao projeto
-└── utils/                   # Funções utilitárias
+├── utils/                   # Funções utilitárias
+├── repositories/            # Camada de acesso a dados, abstração para manipulação de dados persistentes
+└── auth_info/               # Arquivos de autenticação e sessão do WhatsApp (NUNCA compartilhe publicamente)
 ```
 
 ### 📄 Descrição dos Arquivos e Pastas
@@ -52,6 +55,10 @@ bot-whatsapp-ufmg/
 - **services/**: Serviços responsáveis pela integração com APIs externas e outras funcionalidades necessárias para o funcionamento do bot.
 
 - **utils/**: Funções utilitárias que podem ser usadas em diversas partes do código, como manipulação de dados e geração de QR codes.
+
+- **repositories/**: Camada de acesso a dados, responsável por abstrair operações de leitura e escrita em arquivos ou bancos de dados.
+
+- **auth_info/**: Pasta que armazena arquivos de autenticação e sessão do WhatsApp. **Atenção:** nunca compartilhe esses arquivos publicamente, pois contêm informações sensíveis de acesso ao bot.
 
 ## 📥 Instalação
 
@@ -101,6 +108,29 @@ npm run reset
 
 Isso irá reiniciar o bot e limpar qualquer dado temporário armazenado.
 
+## 🔒 Segurança e Boas Práticas
+
+- **Nunca compartilhe a pasta `auth_info/` ou arquivos de autenticação em repositórios públicos.**
+- Utilize variáveis de ambiente para armazenar tokens, chaves de API e outras informações sensíveis. Considere o uso de bibliotecas como `dotenv` para facilitar o gerenciamento dessas variáveis.
+- Faça backups regulares dos arquivos de dados e da pasta `backup/`.
+
+## 🧩 Dependências e Comandos Úteis
+
+Além dos comandos principais, o projeto pode utilizar dependências como `baileys` (integração WhatsApp), `qrcode` (geração de QR codes), entre outras. Consulte o `package.json` para a lista completa.
+
+Outros comandos úteis:
+
+```bash
+npm run lint      # Analisa o código em busca de problemas de estilo/erros
+npm run test      # Executa testes automatizados (se houver)
+```
+
+## 🛠️ Dicas de Troubleshooting
+
+- Se o bot não conectar, verifique sua conexão com a internet e se os arquivos de autenticação estão corretos.
+- Para resetar completamente o estado, apague a pasta `auth_info/` (isso exigirá novo pareamento com o WhatsApp).
+- Consulte os logs do terminal para mensagens de erro detalhadas.
+
 ## 🤝 Contribuição
 
 Se você deseja contribuir para o projeto, siga os seguintes passos:
@@ -110,6 +140,10 @@ Se você deseja contribuir para o projeto, siga os seguintes passos:
 3. Realize as alterações e commit (`git commit -am 'Adicionando nova feature'`).
 4. Envie para o repositório (`git push origin minha-feature`).
 5. Crie um pull request.
+
+## 📫 Contato e Suporte
+
+Para dúvidas, sugestões ou suporte, abra uma issue no repositório ou entre em contato com os mantenedores.
 
 ## 📜 Licença
 

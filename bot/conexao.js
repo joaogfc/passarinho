@@ -36,7 +36,7 @@ async function conectarWhatsapp(tratarPrivado, tratarGrupo) {
     if (jid.endsWith('@g.us')) {
       await tratarGrupo(sock, jid, msg, texto);
     } else {
-      await tratarPrivado(sock, jid, texto);
+      await tratarPrivado(sock, jid, texto, msg); // Passa o objeto msg completo
     }
   });
 
