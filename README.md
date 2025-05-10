@@ -14,10 +14,10 @@ Com uma configuração simples e integração com várias APIs, este bot é idea
 
 - **Cadastro de Usuários**: O bot armazena informações de cadastro de usuários, como nome, curso e interesses. 📝
 - **Interação via WhatsApp**: Os usuários podem interagir com o bot diretamente no WhatsApp para obter informações personalizadas. 💬
-- **Envio de QR Codes**: Geração e envio de QR codes para facilitar a interação com o bot. 📲
 - **Automação de Tarefas**: O bot pode ser configurado para executar tarefas automatizadas, como lembretes e alertas. ⚙️
 - **Gestão de Cursos e Interesses**: As informações sobre os cursos e interesses dos usuários podem ser facilmente manipuladas e consultadas. 🔍
 - **Consulta ao Cardápio do RU**: Permite ao usuário consultar o cardápio atualizado do Restaurante Universitário (RU) da UFMG diretamente pelo WhatsApp. 🍽️
+- **Gerador de Figurinhas**: Permite ao usuários transformarem imagens em figurinhas rapidamente. 📷
 
 ## 📂 Estrutura do Projeto
 
@@ -26,13 +26,11 @@ A estrutura do projeto é organizada da seguinte maneira:
 ```
 bot-whatsapp-ufmg/
 │
-├── fontes_cursos.json       # Dados sobre cursos dos alunos
-├── fontes_interesses.json   # Dados sobre interesses dos alunos
 ├── package.json             # Dependências e scripts do projeto
 ├── package-lock.json        # Controle de versões das dependências
-├── backup/                  # Arquivos de backup
 ├── bot/                     # Lógica e configuração do bot
 ├── controllers/             # Controladores de lógica de negócios
+├── data/                    # Armazenamento de dados
 ├── scripts/                 # Scripts auxiliares
 ├── services/                # Serviços integrados ao projeto
 ├── utils/                   # Funções utilitárias
@@ -42,15 +40,13 @@ bot-whatsapp-ufmg/
 
 ### 📄 Descrição dos Arquivos e Pastas
   
-- **fontes_cursos.json** e **fontes_interesses.json**: Arquivos JSON que armazenam informações sobre os cursos e interesses dos usuários, podendo ser facilmente atualizados.
-
 - **package.json** e **package-lock.json**: Arquivos de configuração para gerenciamento de dependências e scripts do Node.js.
 
 - **bot/**: Implementação do bot, incluindo lógica de interação, configuração e integração com o WhatsApp.
 
 - **controllers/**: Contém a lógica de controle do bot, como processamento de comandos e interações com o usuário.
 
-- **scripts/**: Scripts auxiliares para automação de tarefas e reset do sistema.
+- **data/**: SArquivos JSON onde são armazenados dados importantes.
 
 - **services/**: Serviços responsáveis pela integração com APIs externas e outras funcionalidades necessárias para o funcionamento do bot.
 
@@ -100,29 +96,14 @@ npm start
 
 Esse comando inicia o bot e suas funcionalidades. O bot ficará aguardando interações via WhatsApp e responderá de acordo com a configuração definida.
 
-Para resetar o sistema, use o comando:
-
-```bash
-npm run reset
-```
-
 Isso irá reiniciar o bot e limpar qualquer dado temporário armazenado.
 
 ## 🔒 Segurança e Boas Práticas
 
 - **Nunca compartilhe a pasta `auth_info/` ou arquivos de autenticação em repositórios públicos.**
-- Utilize variáveis de ambiente para armazenar tokens, chaves de API e outras informações sensíveis. Considere o uso de bibliotecas como `dotenv` para facilitar o gerenciamento dessas variáveis.
-- Faça backups regulares dos arquivos de dados e da pasta `backup/`.
+- Utilize variáveis de ambiente para armazenar tokens, chaves de API e outras informações sensíveis.
+- Não compartilhe os arquivos de armazenamento de dados do usuarios.
 
-## 🧩 Dependências e Comandos Úteis
-
-Além dos comandos principais, o projeto pode utilizar dependências como `baileys` (integração WhatsApp), `qrcode` (geração de QR codes), entre outras. Consulte o `package.json` para a lista completa.
-
-Outros comandos úteis:
-
-```bash
-npm run lint      # Analisa o código em busca de problemas de estilo/erros
-npm run test      # Executa testes automatizados (se houver)
 ```
 
 ## 🛠️ Dicas de Troubleshooting
