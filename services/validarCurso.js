@@ -1,3 +1,4 @@
+const log = require('../utils/loggers');
 const stringSimilarity = require('string-similarity');
 
 const cursos = [
@@ -23,16 +24,25 @@ const cursos = [
   "Dança", "Design de Moda", "Teatro", "Arquitetura e Urbanismo", "Design"
 ];
 
+/**
+ * Identifica o curso mais próximo do input do usuário usando similaridade de strings.
+ * @param {string} inputUsuario - Nome do curso informado pelo usuário
+ * @returns {{ nome: string, rating: number }}
+ */
 function identificarCurso(inputUsuario) {
+  if (typeof inputUsuario !== 'string' || !inputUsuario.trim()) {
+    log.erro('[VALIDAR CURSO] Entrada inválida para identificação de curso.');
+    return { nome: '', rating: 0 };
+  }
   const match = stringSimilarity.findBestMatch(inputUsuario.toLowerCase(), cursos.map(c => c.toLowerCase()));
   const melhorIndice = match.bestMatchIndex;
   const melhorNota = match.bestMatch.rating;
   const cursoCorrespondente = cursos[melhorIndice];
-
+  log.info(`[VALIDAR CURSO] Usuário digitou: "${inputUsuario}" | Correspondência: "${cursoCorrespondente}" (score: ${melhorNota})`);
   return {
-    nome: cursoCorrespondente, // <-- alterado de 'curso' para 'nome'
+    nome: cursoCorrespondente,
     rating: melhorNota
   };
 }
 
-module.exports = { identificarCurso };
+module.exports = { identificarCurso, cursos };

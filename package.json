@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node bot/index.js",
-    "reset": "node scripts/reset.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node bot/index.js"
   },
   "keywords": [],
   "author": "João Gustavo França",
@@ -15,8 +13,10 @@
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.16",
     "node-cron": "^3.0.3",
+    "proper-lockfile": "^4.1.2",
     "puppeteer": "^24.7.2",
     "qrcode-terminal": "^0.12.0",
-    "string-similarity": "^4.0.4"
+    "string-similarity": "^4.0.4",
+    "wa-sticker-formatter": "^4.4.4"
   }
 }

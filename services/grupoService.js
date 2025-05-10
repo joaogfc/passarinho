@@ -1,5 +1,9 @@
+const log = require('../utils/loggers');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
+/**
+ * Redireciona mensagens de grupo para usuários com curso/interesse relacionado.
+ */
 async function redirecionarMensagemParaUsuarios(
   sock,
   grupoId,
@@ -114,9 +118,9 @@ async function redirecionarMensagemParaUsuarios(
         }
       }
 
-      console.log(`Mensagem para ${userJid} (curso: ${curso}).`);
+      log.info(`Mensagem para ${userJid} (curso: ${curso}).`);
     } catch (err) {
-      console.log(`Erro ao enviar para ${userJid}:`, err.message);
+      log.erro(`Erro ao enviar para ${userJid}: ${err.message}`);
     }
   }
 }
