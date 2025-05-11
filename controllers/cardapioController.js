@@ -6,8 +6,8 @@ const { carregarArquivo } = require('../utils/arquivos');
 
 // Horários de envio configuráveis
 const HORARIOS = {
-  almoco: '37 04 * * *', // 10:00
-  jantar: '39 04 * * *' // 16:30
+  almoco: '00 10 * * *', // 10:00
+  jantar: '30 16 * * *' // 16:30
 };
 
 /**
