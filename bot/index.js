@@ -3,7 +3,6 @@ const { tratarMensagemUsuario } = require('../controllers/usuarioController');
 const { tratarMensagemGrupo } = require('../controllers/grupoController');
 const { carregarArquivo } = require('../utils/arquivos');
 const { iniciarFluxoCadastro } = require('../services/cadastroService');
-const validarCurso = require('../services/validarCurso');
 const log = require('../utils/loggers');
 const { agendarEnvios } = require('../controllers/cardapioController');
 
@@ -87,6 +86,13 @@ async function tratarPrivado(sock, jid, texto, msg) {
         return;
       }
       // Adicione aqui outros fluxos conforme necessário
+    }
+
+    // Se o usuário não está cadastrado e não está em fluxo de cadastro, inicia o fluxo de cadastro com qualquer mensagem
+    if (!cadastro[jid] && !estados.cadastro[jid]) {
+      log.info(`Usuário ${jid} não cadastrado e fora de fluxo. Iniciando cadastro.`);
+      await iniciarFluxoCadastro(sock, jid, texto, cadastro, estados);
+      return;
     }
 
     if (estados.cadastro[jid]) {

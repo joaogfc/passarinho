@@ -75,6 +75,10 @@ async function obterCardapio(ru, date, tipo) {
     });
     if (!texto || texto.toLowerCase().includes('não há cardápio')) {
       log.warn('[CARDAPIO RAW] ' + textoBruto);
+      // Se for a mensagem padrão do site, propague para o usuário
+      if (textoBruto && textoBruto.trim() === 'Não há cardápio disponível para a data selecionada.') {
+        throw new Error('Não há cardápio disponível para a data selecionada.');
+      }
       throw new Error(textoBruto || 'Cardápio não encontrado');
     }
     const ruNomeMap = {

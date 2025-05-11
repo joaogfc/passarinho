@@ -38,7 +38,7 @@ async function enviarInteresses(sock, jid, usuario) {
  */
 async function enviarAjuda(sock, jid) {
   await sock.sendMessage(jid, {
-    text: `📝 Comandos disponíveis:\n\n/ajuda - Mostrar este menu\n/atualizar - Atualizar seu cadastro\n/cardapio - Cadastrar preferências de cardápio\n/interesses - Ver seus interesses\n/figurinha - Transforme uma imagem ou vídeo curto em figurinha!`
+    text: `📝 Comandos disponíveis:\n\n/ajuda - Mostrar este menu\n/atualizar - Atualizar seu cadastro\n/interesses - Ver seus interesses\n/figurinha - Transforme uma imagem ou vídeo curto em figurinha!\n/bandejao - Consultar o cardápio do RU`
   });
 }
 

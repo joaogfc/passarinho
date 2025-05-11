@@ -1,6 +1,5 @@
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter');
-// sharp removido
 
 /**
  * Converte uma imagem em figurinha e envia ao usuário

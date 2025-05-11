@@ -64,6 +64,10 @@ async function enviar(sock, tipo) {
       return { jid, texto };
     } catch (e) {
       log.erro(`[CARDAPIO] Erro ao obter/enviar cardápio (${tipo}) para ${jid}: ${e.message}`);
+      // Se for a mensagem padrão do site, envie ela ao usuário
+      if (e.message && e.message.trim() === 'Não há cardápio disponível para a data selecionada.') {
+        return { jid, texto: '❌ Não há cardápio disponível para a data selecionada.' };
+      }
       return { jid, texto: `❌ Não foi possível obter o cardápio de hoje para ${ru} (${tipo}).` };
     }
   }));
