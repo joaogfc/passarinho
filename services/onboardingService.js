@@ -5,7 +5,10 @@ const { msgCardapio } = require('../utils/mensagens');
 /**
  * Fluxo de cadastro de preferências de cardápio do usuário.
  */
-async function fluxoCadastroCardapio(sock, jid, cadastro) {
+async function fluxoCadastroCardapio(sock, jid, cadastro = {}) {
+  if (!sock || !jid) {
+    throw new Error('Parâmetros obrigatórios ausentes em fluxoCadastroCardapio');
+  }
   try {
     // 1. Confirma envio diário com validação
     let resposta1;

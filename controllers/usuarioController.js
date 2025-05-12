@@ -6,6 +6,7 @@ const { obterCardapio } = require('../services/cardapioService');
 const { carregarArquivo } = require('../utils/arquivos');
 const { isAdmin, adminPing, handleComunicado, handleContatar } = require('../bot/admin');
 const { processarFigurinha } = require('../utils/figurinha');
+const cardapioCache = require('../utils/cardapioCache');
 
 /**
  * Lida com mensagens recebidas de usuários privados e executa comandos ou fluxos apropriados.
@@ -34,13 +35,15 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
     }
     // Comando para retornar o cardápio do dia (agora liberado para todos)
     if (mensagemTexto === '/bandejao') {
-      global._cacheCardapio = global._cacheCardapio || {};
+      // Substitui global._cacheCardapio por cardapioCache
+      let cacheCardapio = cardapioCache.getCardapio();
       const hoje = new Date().toISOString().slice(0, 10);
-      global._cacheCardapio[hoje] = global._cacheCardapio[hoje] || {};
+      cacheCardapio[hoje] = cacheCardapio[hoje] || {};
       // Limpa cache de dias anteriores
-      Object.keys(global._cacheCardapio).forEach(data => {
-        if (data !== hoje) delete global._cacheCardapio[data];
+      Object.keys(cacheCardapio).forEach(data => {
+        if (data !== hoje) delete cacheCardapio[data];
       });
+      cardapioCache.setCardapio(cacheCardapio);
 
       const user = cadastro[jid];
       const rus = [
@@ -120,23 +123,24 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
       for (const consulta of consultas) {
         const cacheKey = `${consulta.ruId}_${consulta.tipo}`;
         // Usa cache se existir
-        if (Object.prototype.hasOwnProperty.call(global._cacheCardapio[hoje], cacheKey)) {
+        if (Object.prototype.hasOwnProperty.call(cacheCardapio[hoje], cacheKey)) {
           require('../utils/loggers').info(`[CACHE] Usando cache para ${cacheKey}`);
-          respostas.push(global._cacheCardapio[hoje][cacheKey]);
+          respostas.push(cacheCardapio[hoje][cacheKey]);
         } else {
           require('../utils/loggers').info(`[CACHE] Consultando API para ${cacheKey}`);
           try {
             const textoCardapio = await obterCardapio(consulta.ruId, hoje, consulta.tipo);
-            global._cacheCardapio[hoje][cacheKey] = textoCardapio;
+            cacheCardapio[hoje][cacheKey] = textoCardapio;
             respostas.push(textoCardapio);
           } catch (e) {
             const erroMsg = `❌ Não foi possível obter o cardápio de hoje para ${consulta.ruNome} (${consulta.tipo}).`;
-            global._cacheCardapio[hoje][cacheKey] = erroMsg;
+            cacheCardapio[hoje][cacheKey] = erroMsg;
             respostas.push(erroMsg);
             falhas++;
           }
         }
       }
+      cardapioCache.setCardapio(cacheCardapio);
       // Se só há uma consulta, envie só a resposta (erro ou sucesso)
       if (consultas.length === 1) {
         await sock.sendMessage(jid, { text: respostas[0] });

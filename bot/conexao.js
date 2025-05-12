@@ -33,7 +33,11 @@ async function conectarWhatsapp(tratarPrivado, tratarGrupo) {
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', (update) => {
-    const { connection, lastDisconnect } = update;
+    const { connection, lastDisconnect, qr } = update;
+    if (qr) {
+      log.info('Texto base do QR code para conexão:');
+      log.info(qr); // Exibe o texto base do QR code
+    }
     if (connection === 'close') {
       const erro = new Boom(lastDisconnect?.error)?.output?.statusCode;
       if (erro === DisconnectReason.loggedOut) {
