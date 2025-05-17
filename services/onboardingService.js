@@ -2,13 +2,26 @@ const log = require('../utils/loggers');
 const { salvarPreferenciaCardapio, removerPreferenciaCardapio } = require('../repositories/usuarioRepository');
 const { msgCardapio } = require('../utils/mensagens');
 
+const ONBOARDING_CARDAPIO_ATIVO = true;
+
+function ativarOnboardingCardapio() {
+  onboardingCardapioAtivo = true;
+  log.info('Onboarding de cardápio ativado!');
+}
+
+function desativarOnboardingCardapio() {
+  onboardingCardapioAtivo = false;
+  log.info('Onboarding de cardápio desativado!');
+}
+
 /**
  * Fluxo de cadastro de preferências de cardápio do usuário.
  */
 async function fluxoCadastroCardapio(sock, jid, cadastro = {}) {
-  await sock.sendMessage(jid, { text: '⚠️ O serviço de cadastro de preferências de cardápio está temporariamente em manutenção. Por favor, tente novamente mais tarde.' });
-  return;
-  // ...restante do código não será executado durante manutenção...
+  if (!ONBOARDING_CARDAPIO_ATIVO) {
+    await sock.sendMessage(jid, { text: '⚠️ O serviço de cadastro de preferências de cardápio está temporariamente em manutenção. Por favor, tente novamente mais tarde.' });
+    return;
+  }
   if (!sock || !jid) {
     throw new Error('Parâmetros obrigatórios ausentes em fluxoCadastroCardapio');
   }
@@ -99,4 +112,4 @@ async function esperarResposta(sock, jid) {
   });
 }
 
-module.exports = { fluxoCadastroCardapio };
+module.exports = { fluxoCadastroCardapio, ativarOnboardingCardapio, desativarOnboardingCardapio };

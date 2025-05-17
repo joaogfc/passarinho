@@ -9,7 +9,7 @@ const { processarFigurinha } = require('../utils/figurinha');
 const cardapioCache = require('../utils/cardapioCache');
 
 // Para ativar/desativar as funções de cardápio, altere para true/false abaixo:
-const CARDAPIO_ATIVO = true;
+const CARDAPIO_ATIVO = false;
 
 /**
  * Lida com mensagens recebidas de usuários privados e executa comandos ou fluxos apropriados.

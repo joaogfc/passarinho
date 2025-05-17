@@ -5,7 +5,7 @@ const { obterTodosComPreferenciaDeCardapio } = require('../repositories/usuarioR
 const { carregarArquivo } = require('../utils/arquivos');
 
 // Para ativar/desativar as funções de cardápio, altere para true/false abaixo:
-const CARDAPIO_ATIVO = true;
+const CARDAPIO_ATIVO = false;
 
 // Horários de envio configuráveis
 const HORARIOS = {
