@@ -1,159 +1,186 @@
-# 🤖 PASSARINHO - UFMG
+# 🤖 PASSARINHO — Bot WhatsApp UFMG
 
-Este projeto visa democratizar o acesso à informação da UFMG, centralizando dados e serviços dispersos em uma plataforma única. O bot para WhatsApp atua como um HUB de informações, oferecendo aos alunos acesso rápido e personalizado a conteúdos relevantes com base nos seus cursos e interesses. 🎓💡
+O projeto **Passarinho** visa democratizar o acesso à informação da UFMG, centralizando dados e serviços dispersos em uma plataforma única. Utilizando o WhatsApp como canal de comunicação, o bot atua como um HUB de informações personalizadas para alunos da UFMG, com base em curso, interesses e preferências.
 
-Com este bot, buscamos facilitar a comunicação e o acesso a informações acadêmicas e institucionais, alinhando-as com os interesses individuais de cada usuário, proporcionando uma experiência mais personalizada e eficiente. 🚀
+---
 
 ## 📋 Visão Geral
 
-O bot é projetado para facilitar a interação com os alunos da **UFMG** através do WhatsApp, podendo ser configurado para fornecer informações sobre cursos 🎓, interesses 💡 e até realizar ações automatizadas, como enviar lembretes ⏰ e interagir com sistemas externos.
+Este bot oferece:
 
-Com uma configuração simples e integração com várias APIs, este bot é ideal para organizações acadêmicas ou eventos que queiram manter uma comunicação eficiente com seus participantes. 🎉
+- Acesso automatizado a informações institucionais.
+- Consulta personalizada de cardápios do RU.
+- Consulta de rotas dos ônibus internos da UFMG.
+- Cadastro de usuários com segmentação por curso/interesse.
+- Redirecionamento inteligente de mensagens de grupos.
+- Experiência focada na praticidade, sem depender de portais web.
 
-## 🛠️ Funcionalidades
+---
 
-- **Cadastro de Usuários**: O bot armazena informações de cadastro de usuários, como nome, curso e interesses. 📝
-- **Interação via WhatsApp**: Os usuários podem interagir com o bot diretamente no WhatsApp para obter informações personalizadas. 💬
-- **Envio de QR Codes**: Geração e envio de QR codes para facilitar a interação com o bot. 📲
-- **Automação de Tarefas**: O bot pode ser configurado para executar tarefas automatizadas, como lembretes e alertas. ⚙️
-- **Gestão de Cursos e Interesses**: As informações sobre os cursos e interesses dos usuários podem ser facilmente manipuladas e consultadas. 🔍
-- **Consulta ao Cardápio do RU**: Permite ao usuário consultar o cardápio atualizado do Restaurante Universitário (RU) da UFMG diretamente pelo WhatsApp. 🍽️
+## 🧱 Arquitetura e Estrutura de Pastas
 
-## 📂 Estrutura do Projeto
-
-A estrutura do projeto é organizada da seguinte maneira:
-
-```
+```bash
 bot-whatsapp-ufmg/
 │
-├── fontes_cursos.json       # Dados sobre cursos dos alunos
-├── fontes_interesses.json   # Dados sobre interesses dos alunos
-├── package.json             # Dependências e scripts do projeto
-├── package-lock.json        # Controle de versões das dependências
-├── backup/                  # Arquivos de backup
-├── bot/                     # Lógica e configuração do bot
-├── controllers/             # Controladores de lógica de negócios
-├── scripts/                 # Scripts auxiliares
-├── services/                # Serviços integrados ao projeto
-├── utils/                   # Funções utilitárias
-├── repositories/            # Camada de acesso a dados, abstração para manipulação de dados persistentes
-└── auth_info/               # Arquivos de autenticação e sessão do WhatsApp (NUNCA compartilhe publicamente)
+├── bot/                # Lógica principal do bot e integração com WhatsApp
+├── controllers/        # Controladores de fluxo e comandos
+├── data/               # Dados (itinerários, siglas, fontes de cursos, fontes de interesses, etc)
+├── repositories/       # Persistência e abstração de dados do usuário
+├── services/           # Serviços de negócio (cadastro, onboarding, grupos, etc)
+├── utils/              # Utilitários e mensagens centralizadas
+├── package.json        # Dependências e scripts do projeto
+├── README.md           # Documentação do projeto
+└── LICENSE             # Licença GPLv3
 ```
 
-### 📄 Descrição dos Arquivos e Pastas
-  
-- **fontes_cursos.json** e **fontes_interesses.json**: Arquivos JSON que armazenam informações sobre os cursos e interesses dos usuários, podendo ser facilmente atualizados.
+---
 
-- **package.json** e **package-lock.json**: Arquivos de configuração para gerenciamento de dependências e scripts do Node.js.
+## 🧠 Arquitetura de Execução
 
-- **bot/**: Implementação do bot, incluindo lógica de interação, configuração e integração com o WhatsApp.
-
-- **controllers/**: Contém a lógica de controle do bot, como processamento de comandos e interações com o usuário.
-
-- **scripts/**: Scripts auxiliares para automação de tarefas e reset do sistema.
-
-- **services/**: Serviços responsáveis pela integração com APIs externas e outras funcionalidades necessárias para o funcionamento do bot.
-
-- **utils/**: Funções utilitárias que podem ser usadas em diversas partes do código, como manipulação de dados e geração de QR codes.
-
-- **repositories/**: Camada de acesso a dados, responsável por abstrair operações de leitura e escrita em arquivos ou bancos de dados.
-
-- **auth_info/**: Pasta que armazena arquivos de autenticação e sessão do WhatsApp. **Atenção:** nunca compartilhe esses arquivos publicamente, pois contêm informações sensíveis de acesso ao bot.
-
-## 📥 Instalação
-
-### 🔧 Pré-requisitos
-
-Certifique-se de ter o **Node.js** e o **npm** instalados no seu sistema. Você pode verificar se já os possui com os seguintes comandos:
-
-```bash
-node -v
-npm -v
+```text
+[Usuário]
+   ↓
+[bot/index.js] → Baileys
+   ↓
+[controllers/] → [services/] → [repositories/ | data/]
+   ↓
+[utils/] → mensagens.js
 ```
 
-Se não os tiver, você pode instalá-los [aqui](https://nodejs.org/).
+---
 
-### 🛠️ Passos para Instalar
+## ⚙️ Funcionalidades
 
-1. Clone este repositório:
-   ```bash
-   git clone https://github.com/joaogfc/passarinho.git
-   ```
+- **Cadastro e atualização de usuários.**
+- **Consulta ao cardápio do RU.**
+- **Redirecionamento de mensagens por curso/interesse.**
+- **Consulta de itinerários internos da UFMG.**
+- **Criação de figurinhas.**
+- **Execução de tarefas automáticas com `node-cron`.**
 
-2. Navegue até o diretório do projeto:
-   ```bash
-   cd bot-whatsapp-ufmg
-   ```
+---
 
-3. Instale as dependências:
-   ```bash
-   npm install
-   ```
-   
-## 🚀 Uso
+## 🔄 Fluxos Principais
 
-Para iniciar o bot, execute o seguinte comando:
+### 1. Cadastro de Usuário
+- **Comando:** `/cadastrar`
+- **Etapas:**
+  - Pergunta nome, curso, interesses, preferências de refeição/RU.
+  - Valida curso/interesse por similaridade.
+  - Salva no repositório.
 
+**Arquivo:** `cadastroService.js`
+
+### 2. Atualização de Cadastro
+- **Comando:** `/atualizar`
+- **Etapas:**
+  - Mostra dados atuais.
+  - Permite alteração ou descadastro.
+
+**Arquivo:** `cadastroService.js`
+
+### 3. Consulta ao Cardápio do RU
+- **Comando:** `/cardapio`
+- **Etapas:**
+  - Consulta preferências salvas.
+  - Usa Puppeteer para scraping.
+  - Retorna refeições dos RUs selecionados.
+
+**Arquivos:** `onboardingService.js`, `mensagens.js`
+
+### 4. Itinerários Internos
+- **Comando exemplo:** `Como vou do ICEX ao CAD 2?`
+- **Etapas:**
+  - Normaliza origem/destino por siglas/similaridade.
+  - Retorna linhas e horários disponíveis.
+
+**Arquivos:** `internosService.js`, `siglasInternos.js`
+
+### 5. Redirecionamento de Mensagens de Grupo
+- **Entrada:** Mensagens em grupos temáticos.
+- **Processo:** Encaminha para usuários com cursos/interesses relacionados.
+
+**Arquivo:** `grupoService.js`
+
+---
+
+## 📦 Dependências Principais
+
+- `@whiskeysockets/baileys`: Integração com WhatsApp.
+- `string-similarity`: Validação por similaridade.
+- `puppeteer`: Scraping de sites como o RU.
+- `node-cron`: Agendamento de tarefas.
+- `wa-sticker-formatter`: Criação de figurinhas.
+- `qrcode-terminal`: Geração de QR code para login.
+
+---
+
+## 🌐 Stack Tecnológico
+
+- **Linguagem:** Node.js (JavaScript)
+- **Persistência:** Arquivos JSON (via repositórios)
+- **Agendamento:** `node-cron`
+- **Scraping:** `puppeteer`
+- **Mensagens:** Centralizadas em `mensagens.js`
+
+---
+
+## 🛠️ Execução Local
+
+### Requisitos:
+- Node.js
+- npm
+
+### Passos:
 ```bash
+git clone https://github.com/joaogfc/passarinho.git
+cd bot-whatsapp-ufmg
+npm install
 npm start
 ```
 
-Esse comando inicia o bot e suas funcionalidades. O bot ficará aguardando interações via WhatsApp e responderá de acordo com a configuração definida.
+> ⚠️ Após o primeiro login via QR Code, a pasta `auth_info/` será criada com as credenciais. Não compartilhe.
 
-Para resetar o sistema, use o comando:
 
-```bash
-npm run reset
+## 📊 Estrutura de Dados (Exemplo)
+
+```json
+{
+  "nome": "João",
+  "curso": "Ciência da Computação",
+  "interesses": ["pesquisa", "tecnologia"],
+  "preferencias": {
+    "ru": ["RU Setorial I"],
+    "refeicao": ["almoço"]
+  }
+}
 ```
 
-Isso irá reiniciar o bot e limpar qualquer dado temporário armazenado.
+---
 
-## 🔒 Segurança e Boas Práticas
+## 🙋 Contribuição
 
-- **Nunca compartilhe a pasta `auth_info/` ou arquivos de autenticação em repositórios públicos.**
-- Utilize variáveis de ambiente para armazenar tokens, chaves de API e outras informações sensíveis. Considere o uso de bibliotecas como `dotenv` para facilitar o gerenciamento dessas variáveis.
-- Faça backups regulares dos arquivos de dados e da pasta `backup/`.
-
-## 🧩 Dependências e Comandos Úteis
-
-Além dos comandos principais, o projeto pode utilizar dependências como `baileys` (integração WhatsApp), `qrcode` (geração de QR codes), entre outras. Consulte o `package.json` para a lista completa.
-
-Outros comandos úteis:
-
-```bash
-npm run lint      # Analisa o código em busca de problemas de estilo/erros
-npm run test      # Executa testes automatizados (se houver)
-```
-
-## 🛠️ Dicas de Troubleshooting
-
-- Se o bot não conectar, verifique sua conexão com a internet e se os arquivos de autenticação estão corretos.
-- Para resetar completamente o estado, apague a pasta `auth_info/` (isso exigirá novo pareamento com o WhatsApp).
-- Consulte os logs do terminal para mensagens de erro detalhadas.
-
-## 🤝 Contribuição
-
-Se você deseja contribuir para o projeto, siga os seguintes passos:
-
-1. Faça um fork deste repositório.
-2. Crie uma branch para a sua feature (`git checkout -b minha-feature`).
-3. Realize as alterações e commit (`git commit -am 'Adicionando nova feature'`).
-4. Envie para o repositório (`git push origin minha-feature`).
+1. Faça um fork.
+2. Crie uma branch: `git checkout -b minha-feature`
+3. Commit: `git commit -am 'Minha melhoria'`
+4. Push: `git push origin minha-feature`
 5. Crie um pull request.
 
-## 📫 Contato e Suporte
+---
 
-Para dúvidas, sugestões ou suporte, abra uma issue no repositório ou entre em contato com os mantenedores.
+## 📫 Contato
+
+Abra uma *issue* no GitHub ou envie um email para joaogfc4@ufmg.br
+
+---
 
 ## 📜 Licença
 
-Este projeto está licenciado sob a licença GPLv3 - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Licença MIT. Veja o arquivo [LICENSE](./LICENSE).
 
-🙏 Agradecimentos
-Agradecemos à API Baileys pelo excelente suporte e recursos, que possibilitaram a criação desta integração de WhatsApp com o nosso bot de maneira eficiente e robusta. 👏
+---
 
-Agradecimentos especiais aos colaboradores desse projeto:
+## 🎉 Agradecimentos
 
-Confira o perfil de [@joaov-tst](https://github.com/joaov-tst)
-
-
+Agradecimento à equipe Baileys e aos colaboradores do projeto.  
+Colaborador principal: [@joaov-tst](https://github.com/joaov-tst)
