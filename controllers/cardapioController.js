@@ -4,6 +4,9 @@ const cron = require('node-cron');
 const { obterTodosComPreferenciaDeCardapio } = require('../repositories/usuarioRepository');
 const { carregarArquivo } = require('../utils/arquivos');
 
+// Para ativar/desativar as funções de cardápio, altere para true/false abaixo:
+const CARDAPIO_ATIVO = true;
+
 // Horários de envio configuráveis
 const HORARIOS = {
   almoco: '00 10 * * *', // 10:00
@@ -16,6 +19,10 @@ const HORARIOS = {
  * @param {import('@whiskeysockets/baileys').Socket} sock
  */
 function agendarEnvios(sock) {
+  if (!CARDAPIO_ATIVO) {
+    log.info('Agendamento de envios de cardápio está desativado.');
+    return;
+  }
   try {
     cron.schedule(HORARIOS.almoco, () => enviar(sock, 'Almoço').catch(e => log.erro('Erro no envio automático de Almoço: ' + e.message)));
     cron.schedule(HORARIOS.jantar, () => enviar(sock, 'Jantar').catch(e => log.erro('Erro no envio automático de Jantar: ' + e.message)));
@@ -31,6 +38,10 @@ function agendarEnvios(sock) {
  * @param {string} tipo - "Almoço" ou "Jantar"
  */
 async function enviar(sock, tipo) {
+  if (!CARDAPIO_ATIVO) {
+    log.info('Envio automático de cardápio está desativado.');
+    return;
+  }
   // Sempre recarrega o cadastro do disco para garantir dados atualizados
   const cadastro = carregarArquivo('./data/cadastro.json');
   const date = new Date().toISOString().slice(0, 10);

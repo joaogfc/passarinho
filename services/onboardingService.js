@@ -6,6 +6,9 @@ const { msgCardapio } = require('../utils/mensagens');
  * Fluxo de cadastro de preferências de cardápio do usuário.
  */
 async function fluxoCadastroCardapio(sock, jid, cadastro = {}) {
+  await sock.sendMessage(jid, { text: '⚠️ O serviço de cadastro de preferências de cardápio está temporariamente em manutenção. Por favor, tente novamente mais tarde.' });
+  return;
+  // ...restante do código não será executado durante manutenção...
   if (!sock || !jid) {
     throw new Error('Parâmetros obrigatórios ausentes em fluxoCadastroCardapio');
   }

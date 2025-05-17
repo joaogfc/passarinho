@@ -38,7 +38,15 @@ async function enviarInteresses(sock, jid, usuario) {
  */
 async function enviarAjuda(sock, jid) {
   await sock.sendMessage(jid, {
-    text: `📝 Comandos disponíveis:\n\n/ajuda - Mostrar este menu\n/atualizar - Atualizar seu cadastro\n/interesses - Ver seus interesses\n/figurinha - Transforme uma imagem ou vídeo curto em figurinha!\n/bandejao - Consultar o cardápio do RU`
+    text:
+      `📝 *Menu de Comandos*\n\n` +
+      `🔄 /atualizar - Atualizar seu cadastro\n` +
+      `🍽️ /bandejao - Consultar o cardápio do RU (indisponível no momento)\n` +
+      `❓ /ajuda - Mostrar este menu\n` +
+      `⭐ /interesses - Ver seus interesses\n` +
+      `🚌 /internos - Linhas internas UFMG\n` +
+      `👋 /saudacao - Receber uma saudação personalizada\n` +
+      `🖼️ /figurinha - Transforme uma imagem ou vídeo curto em figurinha!\n`
   });
 }
 

@@ -8,6 +8,9 @@ const { isAdmin, adminPing, handleComunicado, handleContatar } = require('../bot
 const { processarFigurinha } = require('../utils/figurinha');
 const cardapioCache = require('../utils/cardapioCache');
 
+// Para ativar/desativar as funções de cardápio, altere para true/false abaixo:
+const CARDAPIO_ATIVO = true;
+
 /**
  * Lida com mensagens recebidas de usuários privados e executa comandos ou fluxos apropriados.
  * @param {object} sock - Instância do socket Baileys
@@ -35,6 +38,10 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
     }
     // Comando para retornar o cardápio do dia (agora liberado para todos)
     if (mensagemTexto === '/bandejao') {
+      if (!CARDAPIO_ATIVO) {
+        await sock.sendMessage(jid, { text: 'A função de cardápio está temporariamente desativada. Tente novamente mais tarde.' });
+        return;
+      }
       // Substitui global._cacheCardapio por cardapioCache
       let cacheCardapio = cardapioCache.getCardapio();
       const hoje = new Date().toISOString().slice(0, 10);
@@ -223,6 +230,169 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
       } else {
         await sock.sendMessage(jid, { text: `👥 Pessoas cadastradas:\n\n${pessoas.join('\n')}` });
       }
+      return;
+    }
+    if (mensagemTexto === '/internos') {
+      const { encontrarPontoMaisProximo, buscarLinhasPorOrigemDestino, proximoHorario } = require('../services/internosService');
+      const linhasInternas = require('../data/itinerariosInternos');
+      const todosPontos = [...new Set([].concat(...linhasInternas.map(l => l.itinerario)))];
+      // Mensagem inicial
+      await sock.sendMessage(jid, { text: '🚍 Olá! Vou te ajudar a encontrar a melhor linha interna da UFMG para o seu trajeto.\n\nDica: você pode digitar siglas ou nomes abreviados, como ICEX, CAD 1, RU II, etc.' });
+      // Pergunta origem
+      let pontoOrigem;
+      while (true) {
+        await sock.sendMessage(jid, { text: 'Por favor, informe o ponto de partida:' });
+        let origem = await new Promise((resolve) => {
+          global.esperandoRespostas = global.esperandoRespostas || {};
+          const timeout = setTimeout(() => {
+            delete global.esperandoRespostas[jid];
+            resolve('');
+          }, 2 * 60 * 1000);
+          global.esperandoRespostas[jid] = (resposta) => {
+            clearTimeout(timeout);
+            delete global.esperandoRespostas[jid];
+            resolve(resposta.trim());
+          };
+        });
+        if (!origem) {
+          await sock.sendMessage(jid, { text: '⏰ Tempo esgotado. Tente novamente usando /internos.' });
+          return;
+        }
+        // Avalia similaridade
+        const stringSimilarity = require('string-similarity');
+        const { encontrarPontoMaisProximo } = require('../services/internosService');
+        const sugestao = encontrarPontoMaisProximo(origem, todosPontos);
+        const match = stringSimilarity.findBestMatch(origem.toUpperCase(), todosPontos.map(p => p.toUpperCase()));
+        if (match.bestMatch.rating >= 0.92) {
+          pontoOrigem = sugestao;
+          break;
+        } else if (sugestao.toUpperCase() !== origem.toUpperCase()) {
+          await sock.sendMessage(jid, { text: `Você quis dizer: *${sugestao}*? (responda sim ou não)` });
+          let confirmacao = await new Promise((resolve) => {
+            global.esperandoRespostas = global.esperandoRespostas || {};
+            const timeout = setTimeout(() => {
+              delete global.esperandoRespostas[jid];
+              resolve('');
+            }, 2 * 60 * 1000);
+            global.esperandoRespostas[jid] = (resposta) => {
+              clearTimeout(timeout);
+              delete global.esperandoRespostas[jid];
+              resolve(resposta.trim().toLowerCase());
+            };
+          });
+          if (confirmacao === 'sim' || confirmacao === 's') {
+            pontoOrigem = sugestao;
+            break;
+          } else {
+            await sock.sendMessage(jid, { text: 'Sem problemas! Tente digitar novamente o ponto de partida.' });
+            continue;
+          }
+        } else {
+          pontoOrigem = sugestao;
+          break;
+        }
+      }
+      // Pergunta destino
+      let pontoDestino;
+      while (true) {
+        await sock.sendMessage(jid, { text: 'Agora, me diga o destino desejado:' });
+        let destino = await new Promise((resolve) => {
+          global.esperandoRespostas = global.esperandoRespostas || {};
+          const timeout = setTimeout(() => {
+            delete global.esperandoRespostas[jid];
+            resolve('');
+          }, 2 * 60 * 1000);
+          global.esperandoRespostas[jid] = (resposta) => {
+            clearTimeout(timeout);
+            delete global.esperandoRespostas[jid];
+            resolve(resposta.trim());
+          };
+        });
+        if (!destino) {
+          await sock.sendMessage(jid, { text: '⏰ Tempo esgotado. Tente novamente usando /internos.' });
+          return;
+        }
+        // Avalia similaridade
+        const stringSimilarity = require('string-similarity');
+        const { encontrarPontoMaisProximo } = require('../services/internosService');
+        const sugestao = encontrarPontoMaisProximo(destino, todosPontos);
+        const match = stringSimilarity.findBestMatch(destino.toUpperCase(), todosPontos.map(p => p.toUpperCase()));
+        if (match.bestMatch.rating >= 0.92) {
+          pontoDestino = sugestao;
+          break;
+        } else if (sugestao.toUpperCase() !== destino.toUpperCase()) {
+          await sock.sendMessage(jid, { text: `Você quis dizer: *${sugestao}*? (responda sim ou não)` });
+          let confirmacao = await new Promise((resolve) => {
+            global.esperandoRespostas = global.esperandoRespostas || {};
+            const timeout = setTimeout(() => {
+              delete global.esperandoRespostas[jid];
+              resolve('');
+            }, 2 * 60 * 1000);
+            global.esperandoRespostas[jid] = (resposta) => {
+              clearTimeout(timeout);
+              delete global.esperandoRespostas[jid];
+              resolve(resposta.trim().toLowerCase());
+            };
+          });
+          if (confirmacao === 'sim' || confirmacao === 's') {
+            pontoDestino = sugestao;
+            break;
+          } else {
+            await sock.sendMessage(jid, { text: 'Sem problemas! Tente digitar novamente o destino.' });
+            continue;
+          }
+        } else {
+          pontoDestino = sugestao;
+          break;
+        }
+      }
+      // Determina o dia da semana
+      const diasSemana = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+      const hoje = new Date();
+      const diaSemana = diasSemana[hoje.getDay()];
+      // Filtra linhas do dia
+      let linhasDoDia = [];
+      if (diaSemana === 'sábado') {
+        linhasDoDia = linhasInternas.filter(l => l.nome.toLowerCase().includes('sábado'));
+      } else {
+        linhasDoDia = linhasInternas.filter(l => !l.nome.toLowerCase().includes('sábado'));
+      }
+      // Busca linhas compatíveis
+      const resultados = buscarLinhasPorOrigemDestino(pontoOrigem, pontoDestino).filter(r =>
+        linhasDoDia.some(l => l.nome === r.linha)
+      );
+      if (!resultados.length) {
+        await sock.sendMessage(jid, { text: 'Não encontrei nenhuma linha interna para esse trajeto hoje. 😕' });
+        await sock.sendMessage(jid, { text: 'Para ter acesso a um mapa interativo, acesse: https://internorotas.github.io/ufmg/' });
+        return;
+      }
+      // Horário atual
+      const agora = new Date();
+      const horaAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
+      // Só mostra o próximo horário de cada linha, ordenado pelo mais próximo
+      let proximos = resultados.map(r => {
+        const prox = proximoHorario(r.horarios, horaAtual);
+        return prox ? { ...r, proximo: prox } : null;
+      }).filter(Boolean);
+      if (!proximos.length) {
+        await sock.sendMessage(jid, { text: 'Não há mais horários disponíveis para hoje nesse trajeto.' });
+        await sock.sendMessage(jid, { text: 'Para ter acesso a um mapa interativo, acesse: https://internorotas.github.io/ufmg/' });
+        return;
+      }
+      proximos.sort((a, b) => {
+        const [ha, ma] = a.proximo.split(':').map(Number);
+        const [hb, mb] = b.proximo.split(':').map(Number);
+        return (ha * 60 + ma) - (hb * 60 + mb);
+      });
+      // Envia cada linha em uma mensagem separada
+      for (const r of proximos) {
+        await sock.sendMessage(jid, {
+          text: `🚌 *${r.linha}*\nDe: ${r.origem}\nPara: ${r.destino}\nPróximo horário: ${r.proximo}`
+        });
+        // Removido: envio de link Google Maps
+      }
+      // Envia o link do mapa interativo como última mensagem
+      await sock.sendMessage(jid, { text: 'Para ter acesso a um mapa interativo, acesse: https://internorotas.github.io/ufmg/' });
       return;
     }
     // Comando para transformar mídia em figurinha
