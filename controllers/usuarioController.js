@@ -7,9 +7,7 @@ const { carregarArquivo } = require('../utils/arquivos');
 const { isAdmin, adminPing, handleComunicado, handleContatar } = require('../bot/admin');
 const { processarFigurinha } = require('../utils/figurinha');
 const cardapioCache = require('../utils/cardapioCache');
-
-// Para ativar/desativar as funções de cardápio, altere para true/false abaixo:
-const CARDAPIO_ATIVO = false;
+const { getCardapioAtivo } = require('../utils/cardapioAtivo');
 
 /**
  * Lida com mensagens recebidas de usuários privados e executa comandos ou fluxos apropriados.
@@ -38,7 +36,7 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
     }
     // Comando para retornar o cardápio do dia (agora liberado para todos)
     if (mensagemTexto === '/bandejao') {
-      if (!CARDAPIO_ATIVO) {
+      if (!getCardapioAtivo()) {
         await sock.sendMessage(jid, { text: 'A função de cardápio está temporariamente desativada. Tente novamente mais tarde.' });
         return;
       }
@@ -233,10 +231,9 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
       return;
     }
     if (mensagemTexto === '/internos') {
-      const { encontrarPontoMaisProximo, buscarLinhasPorOrigemDestino, proximoHorario } = require('../services/internosService');
+      const { encontrarPontoMaisProximo, buscarLinhasPorOrigemDestino, proximoHorario, sugerirPontosProximos } = require('../services/internosService');
       const linhasInternas = require('../data/itinerariosInternos');
       const todosPontos = [...new Set([].concat(...linhasInternas.map(l => l.itinerario)))];
-      // Mensagem inicial
       await sock.sendMessage(jid, { text: '🚍 Olá! Vou te ajudar a encontrar a melhor linha interna da UFMG para o seu trajeto.\n\nDica: você pode digitar siglas ou nomes abreviados, como ICEX, CAD 1, RU II, etc.' });
       // Pergunta origem
       let pontoOrigem;
@@ -258,17 +255,14 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
           await sock.sendMessage(jid, { text: '⏰ Tempo esgotado. Tente novamente usando /internos.' });
           return;
         }
-        // Avalia similaridade
-        const stringSimilarity = require('string-similarity');
-        const { encontrarPontoMaisProximo } = require('../services/internosService');
-        const sugestao = encontrarPontoMaisProximo(origem, todosPontos);
-        const match = stringSimilarity.findBestMatch(origem.toUpperCase(), todosPontos.map(p => p.toUpperCase()));
-        if (match.bestMatch.rating >= 0.92) {
-          pontoOrigem = sugestao;
+        const sugestoes = sugerirPontosProximos(origem, todosPontos, 3);
+        if (sugestoes[0].rating >= 0.92) {
+          pontoOrigem = sugestoes[0].ponto;
           break;
-        } else if (sugestao.toUpperCase() !== origem.toUpperCase()) {
-          await sock.sendMessage(jid, { text: `Você quis dizer: *${sugestao}*? (responda sim ou não)` });
-          let confirmacao = await new Promise((resolve) => {
+        } else {
+          let opcoes = sugestoes.map((s, i) => `${i + 1} - ${s.ponto}`).join('\n');
+          await sock.sendMessage(jid, { text: `Não encontrei exatamente esse ponto. Você quis dizer:\n${opcoes}\n\nResponda o número correspondente ou digite novamente:` });
+          let escolha = await new Promise((resolve) => {
             global.esperandoRespostas = global.esperandoRespostas || {};
             const timeout = setTimeout(() => {
               delete global.esperandoRespostas[jid];
@@ -277,19 +271,17 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
             global.esperandoRespostas[jid] = (resposta) => {
               clearTimeout(timeout);
               delete global.esperandoRespostas[jid];
-              resolve(resposta.trim().toLowerCase());
+              resolve(resposta.trim());
             };
           });
-          if (confirmacao === 'sim' || confirmacao === 's') {
-            pontoOrigem = sugestao;
+          const idx = parseInt(escolha, 10) - 1;
+          if (idx >= 0 && idx < sugestoes.length) {
+            pontoOrigem = sugestoes[idx].ponto;
             break;
           } else {
             await sock.sendMessage(jid, { text: 'Sem problemas! Tente digitar novamente o ponto de partida.' });
             continue;
           }
-        } else {
-          pontoOrigem = sugestao;
-          break;
         }
       }
       // Pergunta destino
@@ -312,17 +304,14 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
           await sock.sendMessage(jid, { text: '⏰ Tempo esgotado. Tente novamente usando /internos.' });
           return;
         }
-        // Avalia similaridade
-        const stringSimilarity = require('string-similarity');
-        const { encontrarPontoMaisProximo } = require('../services/internosService');
-        const sugestao = encontrarPontoMaisProximo(destino, todosPontos);
-        const match = stringSimilarity.findBestMatch(destino.toUpperCase(), todosPontos.map(p => p.toUpperCase()));
-        if (match.bestMatch.rating >= 0.92) {
-          pontoDestino = sugestao;
+        const sugestoes = sugerirPontosProximos(destino, todosPontos, 3);
+        if (sugestoes[0].rating >= 0.92) {
+          pontoDestino = sugestoes[0].ponto;
           break;
-        } else if (sugestao.toUpperCase() !== destino.toUpperCase()) {
-          await sock.sendMessage(jid, { text: `Você quis dizer: *${sugestao}*? (responda sim ou não)` });
-          let confirmacao = await new Promise((resolve) => {
+        } else {
+          let opcoes = sugestoes.map((s, i) => `${i + 1} - ${s.ponto}`).join('\n');
+          await sock.sendMessage(jid, { text: `Não encontrei exatamente esse ponto. Você quis dizer:\n${opcoes}\n\nResponda o número correspondente ou digite novamente:` });
+          let escolha = await new Promise((resolve) => {
             global.esperandoRespostas = global.esperandoRespostas || {};
             const timeout = setTimeout(() => {
               delete global.esperandoRespostas[jid];
@@ -331,19 +320,17 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
             global.esperandoRespostas[jid] = (resposta) => {
               clearTimeout(timeout);
               delete global.esperandoRespostas[jid];
-              resolve(resposta.trim().toLowerCase());
+              resolve(resposta.trim());
             };
           });
-          if (confirmacao === 'sim' || confirmacao === 's') {
-            pontoDestino = sugestao;
+          const idx = parseInt(escolha, 10) - 1;
+          if (idx >= 0 && idx < sugestoes.length) {
+            pontoDestino = sugestoes[idx].ponto;
             break;
           } else {
             await sock.sendMessage(jid, { text: 'Sem problemas! Tente digitar novamente o destino.' });
             continue;
           }
-        } else {
-          pontoDestino = sugestao;
-          break;
         }
       }
       // Determina o dia da semana
@@ -358,13 +345,28 @@ async function tratarMensagemUsuario(sock, jid, texto, cadastro, estados, msg, q
         linhasDoDia = linhasInternas.filter(l => !l.nome.toLowerCase().includes('sábado'));
       }
       // Busca linhas compatíveis
-      const resultados = buscarLinhasPorOrigemDestino(pontoOrigem, pontoDestino).filter(r =>
+      let resultados = buscarLinhasPorOrigemDestino(pontoOrigem, pontoDestino).filter(r =>
         linhasDoDia.some(l => l.nome === r.linha)
       );
       if (!resultados.length) {
-        await sock.sendMessage(jid, { text: 'Não encontrei nenhuma linha interna para esse trajeto hoje. 😕' });
-        await sock.sendMessage(jid, { text: 'Para ter acesso a um mapa interativo, acesse: https://internorotas.github.io/ufmg/' });
-        return;
+        // Busca rotas com baldeação
+        const { buscarRotasComBaldeacao } = require('../services/internosService');
+        const rotasBaldeacao = buscarRotasComBaldeacao(pontoOrigem, pontoDestino).filter(r =>
+          linhasDoDia.some(l => l.nome === r.linha1) && linhasDoDia.some(l => l.nome === r.linha2)
+        );
+        if (rotasBaldeacao.length) {
+          let msg = 'Não há linha direta, mas você pode fazer baldeação:\n';
+          rotasBaldeacao.slice(0, 3).forEach((r, i) => {
+            msg += `\n${i + 1}. Pegue a linha *${r.linha1}* de ${r.origem} até ${r.pontoIntermediario}, depois a linha *${r.linha2}* até ${r.destino}`;
+          });
+          await sock.sendMessage(jid, { text: msg });
+          await sock.sendMessage(jid, { text: 'Para ter acesso a um mapa interativo, acesse: https://internorotas.github.io/ufmg/' });
+          return;
+        } else {
+          await sock.sendMessage(jid, { text: 'Não encontrei nenhuma linha interna para esse trajeto hoje. 😕' });
+          await sock.sendMessage(jid, { text: 'Para ter acesso a um mapa interativo, acesse: https://internorotas.github.io/ufmg/' });
+          return;
+        }
       }
       // Horário atual
       const agora = new Date();

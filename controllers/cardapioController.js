@@ -1,11 +1,9 @@
 const log = require('../utils/loggers');
+const { getCardapioAtivo } = require('../utils/cardapioAtivo');
 const { obterCardapio } = require('../services/cardapioService');
 const cron = require('node-cron');
 const { obterTodosComPreferenciaDeCardapio } = require('../repositories/usuarioRepository');
 const { carregarArquivo } = require('../utils/arquivos');
-
-// Para ativar/desativar as funções de cardápio, altere para true/false abaixo:
-const CARDAPIO_ATIVO = false;
 
 // Horários de envio configuráveis
 const HORARIOS = {
@@ -19,7 +17,7 @@ const HORARIOS = {
  * @param {import('@whiskeysockets/baileys').Socket} sock
  */
 function agendarEnvios(sock) {
-  if (!CARDAPIO_ATIVO) {
+  if (!getCardapioAtivo()) {
     log.info('Agendamento de envios de cardápio está desativado.');
     return;
   }
@@ -38,7 +36,7 @@ function agendarEnvios(sock) {
  * @param {string} tipo - "Almoço" ou "Jantar"
  */
 async function enviar(sock, tipo) {
-  if (!CARDAPIO_ATIVO) {
+  if (!getCardapioAtivo()) {
     log.info('Envio automático de cardápio está desativado.');
     return;
   }

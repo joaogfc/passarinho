@@ -2,6 +2,7 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const { Boom } = require('@hapi/boom');
 const log = require('../utils/loggers');
 const mensagens = require('../utils/mensagens');
+const qrcode = require('qrcode-terminal');
 
 // Centralização de mensagens (ideal: utils/mensagens.js)
 const MENSAGENS = mensagens;
@@ -37,6 +38,7 @@ async function conectarWhatsapp(tratarPrivado, tratarGrupo) {
     if (qr) {
       log.info('Texto base do QR code para conexão:');
       log.info(qr); // Exibe o texto base do QR code
+      qrcode.generate(qr, { small: true }); // Exibe o QR code visual no terminal
     }
     if (connection === 'close') {
       const erro = new Boom(lastDisconnect?.error)?.output?.statusCode;
